@@ -111,7 +111,7 @@ export default function Pricing() {
 
         <Reveal className="mt-10 flex justify-center">
           <div
-            className="relative inline-flex items-center rounded-full border border-line bg-surface p-1"
+            className="relative inline-grid grid-cols-2 items-center rounded-full border border-line bg-surface p-1"
             role="group"
             aria-label="Billing period"
           >
@@ -127,7 +127,7 @@ export default function Pricing() {
               aria-pressed={!annual}
               onClick={() => setAnnual(false)}
               className={cx(
-                'relative z-10 rounded-full px-5 py-2 text-sm font-medium transition-colors duration-300',
+                'relative z-10 flex items-center justify-center rounded-full px-5 py-2 text-sm font-medium transition-colors duration-300',
                 !annual ? 'text-ink' : 'text-ink-3 hover:text-ink-2',
               )}
             >
@@ -138,7 +138,7 @@ export default function Pricing() {
               aria-pressed={annual}
               onClick={() => setAnnual(true)}
               className={cx(
-                'relative z-10 flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-colors duration-300',
+                'relative z-10 flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-colors duration-300',
                 annual ? 'text-ink' : 'text-ink-3 hover:text-ink-2',
               )}
             >

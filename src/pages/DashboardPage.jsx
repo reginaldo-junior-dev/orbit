@@ -11,6 +11,7 @@ import {
   RotateCw,
   Target,
 } from 'lucide-react'
+import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Chip from '../components/ui/Chip'
 import EmptyState from '../components/ui/EmptyState'
@@ -44,6 +45,29 @@ function fullDateLabel() {
     month: 'long',
     day: 'numeric',
   }).format(new Date())
+}
+
+const PLAN_LABELS = { STARTER: 'Starter', PRO: 'Pro', CONSTELLATION: 'Constellation' }
+
+function PlanStatus({ plan, planExpiresAt }) {
+  const isPaid = plan && plan !== 'STARTER'
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <Badge>{PLAN_LABELS[plan] ?? 'Starter'} plan</Badge>
+      {isPaid && planExpiresAt ? (
+        <span className="text-xs text-ink-3">
+          Renews {formatDate(planExpiresAt.slice(0, 10))}
+        </span>
+      ) : (
+        <Link
+          to="/#pricing"
+          className="text-xs font-medium text-accent transition-colors hover:text-accent-hover focus-visible:focus-ring"
+        >
+          Upgrade plan
+        </Link>
+      )}
+    </div>
+  )
 }
 
 function SectionHeading({ id, title, to }) {
@@ -220,6 +244,7 @@ export default function DashboardPage() {
             Here&apos;s what is happening with your productivity.
           </p>
           <p className="mt-1 text-xs text-ink-3">{fullDateLabel()}</p>
+          <PlanStatus plan={user?.plan} planExpiresAt={user?.planExpiresAt} />
         </div>
         <Button href="/tasks/new">
           <Plus className="h-4 w-4" aria-hidden="true" />

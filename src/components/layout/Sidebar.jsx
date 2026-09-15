@@ -30,6 +30,8 @@ const ACCOUNT_ITEMS = [
 
 const ADMIN_ITEMS = [{ to: '/admin', label: 'Admin', icon: ShieldCheck }]
 
+const PLAN_LABELS = { PRO: 'Pro', CONSTELLATION: 'Constellation' }
+
 function NavItem({ to, label, icon: Icon, end, onNavigate }) {
   return (
     <li>
@@ -114,7 +116,14 @@ export default function Sidebar({ onNavigate }) {
               {user?.name ? initialsOf(user.name) : '…'}
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-sm font-medium text-ink">{user?.name}</span>
+              <span className="flex items-center gap-1.5">
+                <span className="truncate text-sm font-medium text-ink">{user?.name}</span>
+                {PLAN_LABELS[user?.plan] ? (
+                  <span className="shrink-0 rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                    {PLAN_LABELS[user.plan]}
+                  </span>
+                ) : null}
+              </span>
               <span className="block truncate text-xs text-ink-3">{user?.email}</span>
             </span>
           </Link>
