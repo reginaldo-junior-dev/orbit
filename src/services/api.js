@@ -16,6 +16,14 @@ function getCookie(name) {
 
 let csrfPromise = null
 
+// The server clears the CSRF cookie on logout (and may rotate it in other
+// cases), which invalidates whatever token we cached in memory. Call this
+// whenever that can have happened so the next mutating request fetches a
+// fresh one instead of replaying a stale value.
+export function resetCsrf() {
+  csrfPromise = null
+}
+
 function loadCsrfToken() {
   return fetch(`${API_URL}/csrf`, { credentials: 'include' }).then(async (response) => {
     if (!response.ok) {
@@ -70,6 +78,12 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
 
   if (response.status === 401 && !path.startsWith('/login') && !path.startsWith('/register')) {
     window.dispatchEvent(new Event('orbit:unauthorized'))
+  }
+
+  if (response.status === 403 && isMutating) {
+    // Most likely a stale/rotated CSRF token — reset so the next attempt
+    // fetches a fresh one instead of repeating the same failure.
+    resetCsrf()
   }
 
   if (!response.ok) {

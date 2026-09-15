@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { apiFetch } from '../services/api'
+import { apiFetch, resetCsrf } from '../services/api'
 import { getMe } from '../services/userService'
 import { AuthContext } from './auth'
 
@@ -42,6 +42,7 @@ export default function AuthProvider({ children }) {
     } catch {
       // Local session is cleared regardless of the request result.
     }
+    resetCsrf()
     setUser(null)
     setStatus('guest')
   }, [])

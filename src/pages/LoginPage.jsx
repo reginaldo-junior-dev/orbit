@@ -86,11 +86,12 @@ export default function LoginPage() {
 
       const from = location.state?.from ?? '/dashboard'
       timerRef.current = setTimeout(() => navigate(from, { replace: true }), 900)
-    } catch {
-      setErrors((current) => ({
-        ...current,
-        form: 'Invalid email or password. Please try again.',
-      }))
+    } catch (error) {
+      const message =
+        error.status === 401
+          ? 'Invalid email or password. Please try again.'
+          : (error.message ?? 'Something went wrong. Please try again.')
+      setErrors((current) => ({ ...current, form: message }))
       setStatus('idle')
     }
   }
