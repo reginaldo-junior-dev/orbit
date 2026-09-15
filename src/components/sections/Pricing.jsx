@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, LoaderCircle } from 'lucide-react'
 import { cx } from '../../lib/cx'
 import Button from '../ui/Button'
 import Container from '../ui/Container'
 import SectionHeading from '../ui/SectionHeading'
 import Reveal from '../shared/Reveal'
+import { useAuth } from '../../context/auth'
+import { createPreference } from '../../services/paymentService'
 
 const PLANS = [
   {
@@ -25,6 +27,7 @@ const PLANS = [
   },
   {
     name: 'Pro',
+    planCode: 'PRO',
     description: 'For people serious about focus and streaks.',
     monthly: 8,
     annual: 6,
@@ -42,6 +45,7 @@ const PLANS = [
   },
   {
     name: 'Constellation',
+    planCode: 'CONSTELLATION',
     description: 'For teams that plan and reflect together.',
     monthly: 24,
     annual: 19,
@@ -60,6 +64,28 @@ const PLANS = [
 
 export default function Pricing() {
   const [annual, setAnnual] = useState(true)
+  const [checkout, setCheckout] = useState({ planCode: null, loading: false, error: null })
+  const { status: authStatus } = useAuth()
+
+  const handlePlanClick = async (planCode) => {
+    if (authStatus !== 'authenticated') {
+      window.location.assign('/register')
+      return
+    }
+
+    setCheckout({ planCode, loading: true, error: null })
+    try {
+      const billingCycle = annual ? 'ANNUAL' : 'MONTHLY'
+      const { checkoutUrl } = await createPreference(planCode, billingCycle)
+      window.location.assign(checkoutUrl)
+    } catch {
+      setCheckout({
+        planCode,
+        loading: false,
+        error: 'Could not start checkout. Please try again.',
+      })
+    }
+  }
 
   return (
     <section
@@ -169,14 +195,37 @@ export default function Pricing() {
                   ))}
                 </ul>
 
-                <Button
-                  href="/register"
-                  variant={plan.variant}
-                  size="lg"
-                  className={cx('mt-8 w-full', plan.featured ? '' : '')}
-                >
-                  {plan.cta}
-                </Button>
+                {plan.planCode ? (
+                  <Button
+                    variant={plan.variant}
+                    size="lg"
+                    className="mt-8 w-full"
+                    disabled={checkout.loading && checkout.planCode === plan.planCode}
+                    onClick={() => handlePlanClick(plan.planCode)}
+                  >
+                    {checkout.loading && checkout.planCode === plan.planCode ? (
+                      <>
+                        <LoaderCircle
+                          className="h-4 w-4 animate-spin motion-reduce:animate-none"
+                          aria-hidden="true"
+                        />
+                        Redirecting…
+                      </>
+                    ) : (
+                      plan.cta
+                    )}
+                  </Button>
+                ) : (
+                  <Button href="/register" variant={plan.variant} size="lg" className="mt-8 w-full">
+                    {plan.cta}
+                  </Button>
+                )}
+
+                {checkout.error && checkout.planCode === plan.planCode ? (
+                  <p className="mt-3 text-center text-xs text-error" role="alert">
+                    {checkout.error}
+                  </p>
+                ) : null}
               </div>
             </Reveal>
           ))}

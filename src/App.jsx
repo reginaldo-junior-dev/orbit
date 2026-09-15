@@ -4,6 +4,9 @@ import GuestOnly from './components/layout/GuestOnly'
 import RequireAuth from './components/layout/RequireAuth'
 import AuthProvider from './context/AuthProvider'
 import ComingSoonPage from './pages/ComingSoonPage'
+import CheckoutSuccessPage from './pages/CheckoutSuccessPage'
+import CheckoutPendingPage from './pages/CheckoutPendingPage'
+import CheckoutFailurePage from './pages/CheckoutFailurePage'
 import AdminPage from './pages/AdminPage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import DashboardPage from './pages/DashboardPage'
@@ -86,6 +89,10 @@ function App() {
 
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/settings" element={<SettingsPage />} />
+
+              <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+              <Route path="/checkout/pending" element={<CheckoutPendingPage />} />
+              <Route path="/checkout/failure" element={<CheckoutFailurePage />} />
 
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
