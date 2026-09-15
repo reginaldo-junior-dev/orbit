@@ -17,11 +17,15 @@ function getCookie(name) {
 let csrfPromise = null
 
 function loadCsrfToken() {
-  return fetch(`${API_URL}/csrf`, { credentials: 'include' }).then((response) => {
+  return fetch(`${API_URL}/csrf`, { credentials: 'include' }).then(async (response) => {
     if (!response.ok) {
       throw new ApiError(response.status, 'Could not start a secure session. Please try again.')
     }
-    const token = getCookie('XSRF-TOKEN')
+    // The XSRF-TOKEN cookie belongs to the API's own domain, so JS on a different
+    // frontend domain can never read it via document.cookie. The API also returns
+    // the token value in the response body, which works regardless of domain.
+    const body = await response.json().catch(() => null)
+    const token = body?.token ?? getCookie('XSRF-TOKEN')
     if (!token) {
       throw new ApiError(0, 'Could not start a secure session. Please try again.')
     }
