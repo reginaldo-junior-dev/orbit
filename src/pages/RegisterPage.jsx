@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { CircleCheck, LoaderCircle, Mail, User } from 'lucide-react'
 import AuthLayout from '../components/layout/AuthLayout'
 import AuthVisual from '../components/shared/AuthVisual'
@@ -10,9 +10,8 @@ import Input from '../components/ui/Input'
 import Logo from '../components/ui/Logo'
 import PasswordInput from '../components/ui/PasswordInput'
 import { cx } from '../lib/cx'
-import { useAuth } from '../context/auth'
 import { PASSWORD_RULE_TEXT, isValidPassword } from '../lib/password'
-import { login, register } from '../services/authService'
+import { register } from '../services/authService'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -91,7 +90,6 @@ export default function RegisterPage() {
   const [terms, setTerms] = useState(false)
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
-  const [successMode, setSuccessMode] = useState(null)
   const nameRef = useRef(null)
   const emailRef = useRef(null)
   const passwordRef = useRef(null)
@@ -99,7 +97,11 @@ export default function RegisterPage() {
   const termsRef = useRef(null)
   const timerRef = useRef(null)
   const navigate = useNavigate()
-  const { signIn } = useAuth()
+  const [searchParams] = useSearchParams()
+
+  const plan = searchParams.get('plan')
+  const cycle = searchParams.get('cycle')
+  const loginHref = plan && cycle ? `/login?plan=${plan}&cycle=${cycle}` : '/login'
 
   useEffect(() => () => clearTimeout(timerRef.current), [])
 
@@ -137,21 +139,8 @@ export default function RegisterPage() {
     setStatus('loading')
     try {
       await register(name.trim(), email.trim(), password)
-      try {
-        await login(email.trim(), password)
-        const ok = await signIn()
-        if (ok) {
-          setSuccessMode('auto')
-          setStatus('success')
-          timerRef.current = setTimeout(() => navigate('/dashboard', { replace: true }), 1200)
-        } else {
-          setSuccessMode('manual')
-          setStatus('success')
-        }
-      } catch {
-        setSuccessMode('manual')
-        setStatus('success')
-      }
+      setStatus('success')
+      timerRef.current = setTimeout(() => navigate(loginHref, { replace: true }), 1200)
     } catch (error) {
       if (error.fieldErrors && Object.keys(error.fieldErrors).length > 0) {
         setErrors(error.fieldErrors)
@@ -187,11 +176,7 @@ export default function RegisterPage() {
       </p>
 
       {success ? (
-        <FormNotice className="mt-6">
-          {successMode === 'auto'
-            ? 'Account created — taking you to your dashboard…'
-            : 'Account created — you can log in now.'}
-        </FormNotice>
+        <FormNotice className="mt-6">Account created — taking you to log in…</FormNotice>
       ) : null}
 
       {errors.form ? (
@@ -314,24 +299,13 @@ export default function RegisterPage() {
         </Button>
       </form>
 
-      {success && successMode === 'manual' ? (
-        <div
-          className="animate-fade-in mt-6 motion-reduce:animate-none"
-          style={{ animationDuration: '0.3s' }}
-        >
-          <Button href="/login" variant="outline" size="lg" className="w-full">
-            Go to Log in
-          </Button>
-        </div>
-      ) : null}
-
       <p
         className="animate-fade-in mt-8 text-center text-sm text-ink-3 motion-reduce:animate-none"
         style={{ animationDelay: '0.24s' }}
       >
         Already have an account?{' '}
         <Link
-          to="/login"
+          to={loginHref}
           className="inline-block rounded-sm py-1.5 font-medium text-accent transition-colors hover:text-accent-hover focus-visible:focus-ring"
         >
           Log in

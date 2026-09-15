@@ -1,5 +1,6 @@
 import {
   CheckSquare,
+  CreditCard,
   FolderKanban,
   LayoutDashboard,
   LogOut,
@@ -24,6 +25,7 @@ const WORKSPACE_ITEMS = [
 const ACCOUNT_ITEMS = [
   { to: '/profile', label: 'Profile', icon: UserRound },
   { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/#pricing', label: 'Upgrade plan', icon: CreditCard },
 ]
 
 const ADMIN_ITEMS = [{ to: '/admin', label: 'Admin', icon: ShieldCheck }]

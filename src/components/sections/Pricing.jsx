@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Check, LoaderCircle } from 'lucide-react'
 import { cx } from '../../lib/cx'
 import Button from '../ui/Button'
@@ -66,16 +67,18 @@ export default function Pricing() {
   const [annual, setAnnual] = useState(true)
   const [checkout, setCheckout] = useState({ planCode: null, loading: false, error: null })
   const { status: authStatus } = useAuth()
+  const navigate = useNavigate()
 
   const handlePlanClick = async (planCode) => {
+    const billingCycle = annual ? 'ANNUAL' : 'MONTHLY'
+
     if (authStatus !== 'authenticated') {
-      window.location.assign('/register')
+      navigate(`/register?plan=${planCode}&cycle=${billingCycle}`)
       return
     }
 
     setCheckout({ planCode, loading: true, error: null })
     try {
-      const billingCycle = annual ? 'ANNUAL' : 'MONTHLY'
       const { checkoutUrl } = await createPreference(planCode, billingCycle)
       window.location.assign(checkoutUrl)
     } catch {

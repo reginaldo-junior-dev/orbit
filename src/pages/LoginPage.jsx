@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { CircleCheck, LoaderCircle, Mail } from 'lucide-react'
 import AuthLayout from '../components/layout/AuthLayout'
 import Button from '../components/ui/Button'
@@ -9,6 +9,7 @@ import Logo from '../components/ui/Logo'
 import PasswordInput from '../components/ui/PasswordInput'
 import { useAuth } from '../context/auth'
 import { login } from '../services/authService'
+import { createPreference } from '../services/paymentService'
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function validate({ email, password }) {
@@ -34,7 +35,11 @@ export default function LoginPage() {
   const timerRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { signIn } = useAuth()
+
+  const plan = searchParams.get('plan')
+  const cycle = searchParams.get('cycle')
 
   useEffect(() => () => clearTimeout(timerRef.current), [])
 
@@ -67,6 +72,18 @@ export default function LoginPage() {
         return
       }
       setStatus('success')
+
+      if (plan && cycle) {
+        try {
+          const { checkoutUrl } = await createPreference(plan, cycle)
+          window.location.assign(checkoutUrl)
+          return
+        } catch {
+          // Fall back to a normal login redirect — the plan can still be
+          // purchased from the Pricing section now that the user is signed in.
+        }
+      }
+
       const from = location.state?.from ?? '/dashboard'
       timerRef.current = setTimeout(() => navigate(from, { replace: true }), 900)
     } catch {
@@ -101,7 +118,11 @@ export default function LoginPage() {
       </p>
 
       {success ? (
-        <FormNotice className="mt-6">You&apos;re in — heading to your dashboard…</FormNotice>
+        <FormNotice className="mt-6">
+          {plan && cycle
+            ? "You're in — taking you to checkout…"
+            : "You're in — heading to your dashboard…"}
+        </FormNotice>
       ) : null}
 
       {errors.form ? (
